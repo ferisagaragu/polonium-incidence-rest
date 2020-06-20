@@ -5,12 +5,12 @@ import org.pechblenda.exception.UnauthenticatedException
 
 import org.pechblenda.polonium.dao.IUserDAO
 import org.pechblenda.polonium.entity.User
-import org.pechblenda.polonium.security.JwtProvider
 import org.pechblenda.polonium.security.UserPrinciple
 import org.pechblenda.polonium.service.`interface`.IAuthService
 
 import org.pechblenda.rest.Request
 import org.pechblenda.rest.Response
+import org.pechblenda.security.JwtProvider
 import org.springframework.beans.factory.annotation.Autowired
 
 import org.springframework.http.ResponseEntity
@@ -91,13 +91,13 @@ class AuthServiceImpl: IAuthService, UserDetailsService {
 		return out.exclude("password").ok()
 	}
 
-		override fun recoverPassword(request: Request): ResponseEntity<Any> {
-				TODO("Not yet implemented")
-		}
+	override fun recoverPassword(request: Request): ResponseEntity<Any> {
+		TODO("Not yet implemented")
+	}
 
-		override fun changePassword(request: Request): ResponseEntity<Any> {
-				TODO("Not yet implemented")
-		}
+	override fun changePassword(request: Request): ResponseEntity<Any> {
+		TODO("Not yet implemented")
+	}
 
 	@Transactional(readOnly = true)
 	override fun loadUserByUsername(userName: String): UserDetails {

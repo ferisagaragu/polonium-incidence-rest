@@ -1,17 +1,13 @@
 package org.pechblenda.polonium.config
 
-import com.google.auth.oauth2.GoogleCredentials
-import com.google.cloud.storage.Storage
-import com.google.cloud.storage.StorageOptions
-
 import org.pechblenda.exception.HttpExceptionResponse
 import org.pechblenda.rest.Response
-import org.pechblenda.storage.FirebaseStorage
+import org.pechblenda.security.JwtAuthEntryPoint
+import org.pechblenda.security.JwtProvider
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.io.ClassPathResource
 
 
 @Configuration

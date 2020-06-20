@@ -2,8 +2,12 @@ package org.pechblenda.polonium.security
 
 
 import org.pechblenda.polonium.service.AuthServiceImpl
+import org.pechblenda.security.JwtAuthEntryPoint
+import org.pechblenda.security.JwtAuthTokenFilter
+import org.pechblenda.security.JwtProvider
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -22,36 +26,28 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-class WebSecurityConfig: WebSecurityConfigurerAdapter() {
+class WebSecurityConfig(
+	@Value("\${app.auth.jwt-secret}")
+	private val jwtSecret: String,
+	@Value("\${app.auth.jwt-expiration}")
+	private val jwtExpiration: Int
+): WebSecurityConfigurerAdapter() {
 
 	@Autowired
 	private lateinit var userDetailsService: AuthServiceImpl
 
 	@Autowired
-	private lateinit var unauthorizedHandler: JwtAuthEntryPoint
+	private lateinit var jwtAuthEntryPoint: JwtAuthEntryPoint
 
+	@Autowired
+	private lateinit var jwtProvider: JwtProvider
 
-	@Bean
-	fun authenticationJwtTokenFilter(): JwtAuthTokenFilter {
-		return JwtAuthTokenFilter()
-	}
 
 	@Throws(Exception::class)
-	public override fun configure(authenticationManagerBuilder: AuthenticationManagerBuilder) {
+	override fun configure(authenticationManagerBuilder: AuthenticationManagerBuilder) {
 		authenticationManagerBuilder
 			.userDetailsService<UserDetailsService?>(userDetailsService)
 			.passwordEncoder(passwordEncoder())
-	}
-
-	@Bean
-	@Throws(Exception::class)
-	override fun authenticationManagerBean(): AuthenticationManager {
-		return super.authenticationManagerBean()
-	}
-
-	@Bean
-	fun passwordEncoder(): PasswordEncoder {
-		return BCryptPasswordEncoder()
 	}
 
 	@Throws(Exception::class)
@@ -60,9 +56,36 @@ class WebSecurityConfig: WebSecurityConfigurerAdapter() {
 			.antMatchers("/auth/**", "/test/**").permitAll()
 			.anyRequest().authenticated()
 			.and()
-			.exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
+			.exceptionHandling().authenticationEntryPoint(jwtAuthEntryPoint).and()
 			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter::class.java)
+	}
+
+
+	@Bean
+	fun jwtAuthEntryPoint(): JwtAuthEntryPoint {
+		return JwtAuthEntryPoint()
+	}
+
+  @Bean
+  fun jwtProvider(): JwtProvider {
+  	return JwtProvider(jwtSecret, jwtExpiration)
+  }
+
+	@Bean
+	fun passwordEncoder(): PasswordEncoder {
+		return BCryptPasswordEncoder()
+	}
+
+	@Bean
+	fun authenticationJwtTokenFilter(): JwtAuthTokenFilter {
+		return JwtAuthTokenFilter(jwtProvider, userDetailsService)
+	}
+
+	@Bean
+	@Throws(Exception::class)
+	override fun authenticationManagerBean(): AuthenticationManager {
+		return super.authenticationManagerBean()
 	}
 
 }
